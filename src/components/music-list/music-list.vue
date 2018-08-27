@@ -18,7 +18,7 @@
                         <div class="filter"></div>
                         <div class="text">
                             <h2 class="list-title">{{title}}</h2>
-                            <p class="paly-count" v-if="playCount">
+                            <p class="play-count" v-if="playCount">
                                 <i class="fa fa-headphones"></i>
                                 {{playCount}}
                             </p>
@@ -221,23 +221,23 @@
     .text {
         position: absolute;
         width: 80%;
-        height: 40px;
+        /*height: 40px;*/
         bottom: 50px;
         left: 15px;
         color: #fff;
-    .play-count {
-        position: absolute;
-        bottom: -16px;
-        font-size: $font-size-small;
-    }
-    .list-title {
+      .play-count {
+          position: absolute;
+          bottom: -16px;
+          font-size: $font-size-small;
+      }
+      .list-title {
         position: absolute;
         bottom: 0;
         font-size: $font-size-medium-x;
         line-height: 18px;
         font-weight: bold;
         letter-spacing: 1px;
-    }
+      }
     }
     }
     .song-list-wrapper {

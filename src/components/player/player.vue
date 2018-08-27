@@ -1,24 +1,24 @@
 <template>
-  <div class="player">
+  <div class="player" v-if="playList.length > 0">
     <transition name="normal">
         <div class="normal-player">
           <div class="background">
             <div class="filter"></div>
-            <img  width="100%" height="100%" alt="">
+            <img :src="playList[0].image" width="100%" height="100%" alt="">
           </div>
           <div class="top">
-            <div class="back">
+            <div class="back" @click="back">
               <i class="fa fa-angle-down"></i>
             </div>
-            <h1 class="title">888</h1>
-            <h2 class="subtitle"></h2>
+            <h1 class="title" v-html="playList[0].name"></h1>
+            <h2 class="subtitle" v-html="playList[0].singer"></h2>
           </div>
           <div class="middle">
             <transition name="middleL">
-              <div class="middle-l">
+              <div class="middle-l" v-show="currentShow=== 'cd'">
                 <div class="cd-wrapper">
                   <div class="cd">
-                    <img src="" class="image" alt="">
+                    <img :src="playList[0].image" class="image" alt="">
                   </div>
                 </div>
               </div>
@@ -39,7 +39,7 @@
                 <i class="iconfont icon-prev" ></i>
               </div>
               <div class="icon i-center" >
-                <i class="iconfont" ></i>
+                <i class="iconfont"  @click="togglePlaying" :class="playIcon"></i>
               </div>
               <div class="icon i-right" >
                 <i class="iconfont icon-test"></i>
@@ -51,12 +51,80 @@
           </div>
         </div>
     </transition>
+    <audio id="music-audio" ref="audio" ></audio>
   </div>
 </template>
 
 <script>
+  import {mapGetters,mapActions,mapMutations} from "vuex"
+  import {playList} from "@/store/getters";
+  import {getSong, getLyric} from '@/api/song'
     export default {
-        name: "player"
+      data(){
+        return{
+            url: '',
+            songReady: false,
+            currentTime: 0,
+            duration: 0,
+            percent: 0,
+            radius: 32,
+            currentLyric: null,
+            currentLineNum: 0,
+            currentShow: 'cd',
+            playingLyric: '',
+            noLyric: false
+        }
+      },
+        mounted(){
+            console.log(this.playList,'li')
+        },
+        name: "player",
+        computed:{
+            playIcon () {
+                return this.playing ? 'icon-stop' : 'icon-bofangicon'
+            },
+            ...mapGetters([
+                'playList'
+            ])
+        },
+        mounted(){
+          console.log(this.playList,'llll')
+            // this._getSong(this.playList[0])
+        },
+        methods:{
+            back () {
+                // this.setFullScreen(false)
+                // this.currentShow = 'cd'
+            },
+            _getSong (id) {
+                getSong(id).then((res) => {
+
+                    this.url = res.data.data[0].url
+                })
+            },
+            togglePlaying () {
+                const audio = this.$refs.audio
+                // this.setPlayingState(!this.playing)
+                // console.log(audio,'audio')
+                // console.log(this.playList[0].id,'jjj')
+                // getSong(this.playList[0].id).then((res) => {
+                //     console.log(res,'res')
+                //     this.url = res.data.data[0].url
+                // })
+
+                let music=document.querySelector('#music-audio')
+                music.src='http://m10.music.126.net/20180827224947/7cd883c3d55daf9b3614208174c56560/ymusic/6c12/a898/e04b/80c1ee0fbd2683e71b7d6cc081449511.mp3'
+                setTimeout(()=>{
+                    music.play()
+                },300)
+                // audio.play()
+                // this.playing ? audio.play() : audio.pause()
+                // if (this.currentLyric) {
+                //     this.currentLyric.togglePlay()
+                // }
+            },
+        }
+
     }
 </script>
 

@@ -1,4 +1,5 @@
 const state={
-    musicList:{}
+    musicList:{},
+    playList:[]
 }
 export default state

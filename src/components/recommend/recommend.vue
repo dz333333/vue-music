@@ -33,7 +33,7 @@
                 <div class="recommend-song" ref="recommendSong">
                     <h1 class="title">推荐歌曲</h1>
                     <ul>
-                        <li class="item" v-for="item in recommendMusic" :key="item.id" >
+                        <li class="item" v-for="item in recommendMusic" :key="item.id" @click="selectSong(item)">
                             <div class="icon">
                                 <img v-lazy="item.image">
                             </div>
@@ -56,7 +56,7 @@
     import {ERR_OK}from '@/common/js/config'
     import {createRecommendSong} from '@/common/js/song'
     import {mapMutations, mapActions} from 'vuex'
-    // import {playlistMixin} from '@/common/js/mixin'
+    import {playlistMixin} from '@/common/js/mixin'
     export default {
         // mixins:[playlistMixin],
         name: "recommend",
@@ -82,11 +82,11 @@
             Scroll
         },
         methods:{
-            // handlePlaylist (playlist) {
-            //     const bottom = playlist.length > 0 ? '60px' : ''
-            //     this.$refs.recommend.style.bottom = bottom
-            //     this.$refs.scroll.refresh()
-            // },
+            handlePlaylist (playlist) {
+                const bottom = playlist.length > 0 ? '60px' : ''
+                this.$refs.recommend.style.bottom = bottom
+                this.$refs.scroll.refresh()
+            },
             _getBanner(){
                 getBanner().then((res)=>{
                     if(res.status===ERR_OK){
@@ -126,9 +126,16 @@
                 })
                 this.setMusicList(item)
             },
+            selectSong(item){
+                this.insertSong(item)
+            },
             ...mapMutations({
                 setMusicList:'SET_MUSIC_LIST'
-            })
+            }),
+            ...mapActions([
+                'insertSong'
+            ])
+
 
         }
 

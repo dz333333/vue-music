@@ -4,6 +4,9 @@ const mutations={
         console.log(666,musicList)
         state.musicList=musicList
         console.log(state)
+    },
+    [types.SET_PLAYLIST](state,list){
+        state.playList=list
     }
 }
 

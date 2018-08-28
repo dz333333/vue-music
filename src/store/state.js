@@ -1,5 +1,9 @@
 const state={
     musicList:{},
-    playList:[]
+    playList:[],
+    currentIndex:-1,
+    // 播放
+    playing: false,
+    currentSong:{}
 }
 export default state

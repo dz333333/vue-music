@@ -4,21 +4,21 @@
         <div class="normal-player">
           <div class="background">
             <div class="filter"></div>
-            <img :src="playList[0].image" width="100%" height="100%" alt="">
+            <img :src="currentSong.image" width="100%" height="100%" alt="">
           </div>
           <div class="top">
             <div class="back" @click="back">
               <i class="fa fa-angle-down"></i>
             </div>
-            <h1 class="title" v-html="playList[0].name"></h1>
-            <h2 class="subtitle" v-html="playList[0].singer"></h2>
+            <h1 class="title" v-html="currentSong.name"></h1>
+            <h2 class="subtitle" v-html="currentSong.singer"></h2>
           </div>
           <div class="middle">
             <transition name="middleL">
               <div class="middle-l" v-show="currentShow=== 'cd'">
                 <div class="cd-wrapper">
                   <div class="cd">
-                    <img :src="playList[0].image" class="image" alt="">
+                    <img :src="currentSong.image" class="image" alt="">
                   </div>
                 </div>
               </div>
@@ -84,12 +84,10 @@
                 return this.playing ? 'icon-stop' : 'icon-bofangicon'
             },
             ...mapGetters([
-                'playList'
+                'playList',
+                'currentSong',
+                'playing'
             ])
-        },
-        mounted(){
-          console.log(this.playList,'llll')
-            // this._getSong(this.playList[0])
         },
         methods:{
             back () {
@@ -107,13 +105,14 @@
                 // this.setPlayingState(!this.playing)
                 // console.log(audio,'audio')
                 // console.log(this.playList[0].id,'jjj')
-                // getSong(this.playList[0].id).then((res) => {
-                //     console.log(res,'res')
-                //     this.url = res.data.data[0].url
-                // })
+              let music=document.querySelector('#music-audio')
+                getSong(this.playList[0].id).then((res) => {
+                    console.log(res,'res')
+                  music.src= res.data.data[0].url
+                })
 
-                let music=document.querySelector('#music-audio')
-                music.src='http://m10.music.126.net/20180827224947/7cd883c3d55daf9b3614208174c56560/ymusic/6c12/a898/e04b/80c1ee0fbd2683e71b7d6cc081449511.mp3'
+
+                // music.src=this.url
                 setTimeout(()=>{
                     music.play()
                 },300)

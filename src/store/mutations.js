@@ -7,6 +7,12 @@ const mutations={
     },
     [types.SET_PLAYLIST](state,list){
         state.playList=list
+    },
+    [types.SET_CURRENT_INDEX](state,index){
+        state.currentIndex=index
+    },
+    [types.SET_PLAYING_STATE](state,flag){
+        state.currentIndex=flag
     }
 }
 

@@ -1,7 +1,7 @@
 <template>
-  <div class="player" v-if="playList.length > 0">
+  <div class="player" v-show="playList.length > 0">
     <transition name="normal">
-        <div class="normal-player">
+        <div class="normal-player" >
           <div class="background">
             <div class="filter"></div>
             <img :src="currentSong.image" width="100%" height="100%" alt="">
@@ -51,7 +51,7 @@
           </div>
         </div>
     </transition>
-    <audio id="music-audio" ref="audio" ></audio>
+    <audio id="music-audio" autoplay ref="audio" ></audio>
   </div>
 </template>
 
@@ -76,7 +76,7 @@
         }
       },
         mounted(){
-            console.log(this.playList,'li')
+            console.log(this.$refs.audio,'li')
         },
         name: "player",
         computed:{
@@ -89,39 +89,60 @@
                 'playing'
             ])
         },
+        watch:{
+            currentSong (newVal, oldVal) {
+                if (!newVal.id) {
+                    return
+                }
+                if (newVal.id === oldVal.id) {
+                    return
+                }
+                console.log(this.$refs.audio,'audio')
+                this.$refs.audio.pause()
+                this.$refs.audio.currentTime = 0
+                this._getSong(newVal.id)
+            },
+            url (newUrl) {
+                // this._getLyric(this.currentSong.id)
+                this.$refs.audio.src = newUrl
+                // let play = setInterval(() => {
+                //   if (this.songReady) {
+                //     this.$refs.audio.play()
+                //     clearInterval(play)
+                //   }
+                //   console.log('play')
+                // // }, 20)
+                // let stop = setInterval(() => {
+                //     this.duration = this.$refs.audio.duration
+                //     if (this.duration) {
+                //         clearInterval(stop)
+                //     }
+                // }, 150)
+                this.setPlayingState(true)
+            },
+        },
         methods:{
             back () {
                 // this.setFullScreen(false)
                 // this.currentShow = 'cd'
             },
             _getSong (id) {
+                console.log(6666)
                 getSong(id).then((res) => {
-
                     this.url = res.data.data[0].url
                 })
             },
             togglePlaying () {
                 const audio = this.$refs.audio
-                // this.setPlayingState(!this.playing)
-                // console.log(audio,'audio')
-                // console.log(this.playList[0].id,'jjj')
-              let music=document.querySelector('#music-audio')
-                getSong(this.playList[0].id).then((res) => {
-                    console.log(res,'res')
-                  music.src= res.data.data[0].url
-                })
-
-
-                // music.src=this.url
-                setTimeout(()=>{
-                    music.play()
-                },300)
-                // audio.play()
-                // this.playing ? audio.play() : audio.pause()
+                this.setPlayingState(!this.playing)
+                this.playing ? audio.play() : audio.pause()
                 // if (this.currentLyric) {
                 //     this.currentLyric.togglePlay()
                 // }
             },
+            ...mapMutations({
+                'setPlayingState':'SET_PLAYING_STATE'
+            })
         }
 
     }

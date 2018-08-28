@@ -12,7 +12,7 @@ const mutations={
         state.currentIndex=index
     },
     [types.SET_PLAYING_STATE](state,flag){
-        state.currentIndex=flag
+        state.playing=flag
     }
 }
 

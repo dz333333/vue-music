@@ -47,8 +47,8 @@ export const insertSong = function ({commit, state}, song) {
     commit(types.SET_PLAYLIST, playList)
     // commit(types.SET_SEQUENCE_LIST, sequenceList)
     commit(types.SET_CURRENT_INDEX, currentIndex)
-    // commit(types.SET_FULL_SCREEN, true)
-    commit(types.SET_PLAYING_STATE, true)
+    commit(types.SET_FULL_SCREEN, true)
+    commit(types.SET_PLAYING_STATE, state.playing)
 }
 
 

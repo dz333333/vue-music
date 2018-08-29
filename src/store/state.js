@@ -4,6 +4,7 @@ const state={
     currentIndex:-1,
     // 播放
     playing: false,
-    currentSong:{}
+    currentSong:{},
+    fullScreen:false
 }
 export default state

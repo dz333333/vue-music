@@ -1,7 +1,7 @@
 <template>
   <div class="player" v-show="playList.length > 0">
-    <transition name="normal">
-        <div class="normal-player" >
+    <transition name="normal" >
+        <div class="normal-player" v-show="fullScreen">
           <div class="background">
             <div class="filter"></div>
             <img :src="currentSong.image" width="100%" height="100%" alt="">
@@ -17,7 +17,7 @@
             <transition name="middleL">
               <div class="middle-l" v-show="currentShow=== 'cd'">
                 <div class="cd-wrapper">
-                  <div class="cd">
+                  <div class="cd" :class="cdCls">
                     <img :src="currentSong.image" class="image" alt="">
                   </div>
                 </div>
@@ -29,7 +29,11 @@
           </div>
           <div class="bottom">
             <div class="progress-wrapper">
-              <span class="time time-l"></span>
+              <span class="time time-l">{{format(currentTime)}}</span>
+              <div class="progress-bar-wrapper">
+                  <ProgressBar :percent="percent" @percentChangeEnd="percentChangeEnd" @percentChange="percentChange"></ProgressBar>
+              </div>
+              <span class="time time-r">{{format(duration)}}</span>
             </div>
             <div class="operators">
               <div class="icon i-left" >
@@ -51,13 +55,21 @@
           </div>
         </div>
     </transition>
-    <audio id="music-audio" autoplay ref="audio" ></audio>
+    <transition name="mini">
+      <div class="mini-player" v-show="!fullScreen" >
+        <div class="icon">
+          <img src="" alt="">
+        </div>
+      </div>
+    </transition>
+    <audio id="music-audio" autoplay ref="audio" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script>
   import {mapGetters,mapActions,mapMutations} from "vuex"
   import {playList} from "@/store/getters";
+  import ProgressBar from '@/base/progress-bar/progress-bar'
   import {getSong, getLyric} from '@/api/song'
     export default {
       data(){
@@ -83,10 +95,14 @@
             playIcon () {
                 return this.playing ? 'icon-stop' : 'icon-bofangicon'
             },
+            cdCls(){
+                return this.playing ? 'play' : 'play pause'
+            },
             ...mapGetters([
                 'playList',
                 'currentSong',
-                'playing'
+                'playing',
+                'fullScreen'
             ])
         },
         watch:{
@@ -111,20 +127,59 @@
                 //     clearInterval(play)
                 //   }
                 //   console.log('play')
-                // // }, 20)
-                // let stop = setInterval(() => {
-                //     this.duration = this.$refs.audio.duration
-                //     if (this.duration) {
-                //         clearInterval(stop)
-                //     }
-                // }, 150)
+                // }, 20)
+                let stop = setInterval(() => {
+                    this.duration = this.$refs.audio.duration
+                    console.log(this.duration,'du')
+                    if (this.duration) {
+                        clearInterval(stop)
+                    }
+                }, 150)
                 this.setPlayingState(true)
             },
+            currentTime () {
+                this.percent = this.currentTime / this.duration
+            }
         },
         methods:{
+            format (interval) {
+                interval = interval | 0
+                let minute = interval / 60 | 0
+                let second = interval % 60
+                if (second < 10) {
+                    second = '0' + second
+                }
+                return minute + ':' + second
+            },
             back () {
-                // this.setFullScreen(false)
+                this.setFullScreen(false)
                 // this.currentShow = 'cd'
+            },
+            percentChangeEnd (percent) {
+                this.move = false
+                const currentTime = this.duration * percent
+                this.$refs.audio.currentTime = currentTime
+                if (!this.playing) {
+                    this.$refs.audio.play()
+                    this.setPlayingState(true)
+                }
+                // if (this.currentLyric) {
+                //     this.currentLyric.seek(currentTime * 1000)
+                // }
+            },
+            percentChange (percent) {
+                this.move = true
+                const currentTime = this.duration * percent
+                this.currentTime = currentTime
+                // if (this.currentLyric) {
+                //     this.currentLyric.seek(currentTime * 1000)
+                // }
+            },
+            updateTime (e) {
+                if (this.move) {
+                    return
+                }
+                this.currentTime = e.target.currentTime
             },
             _getSong (id) {
                 console.log(6666)
@@ -140,9 +195,14 @@
                 //     this.currentLyric.togglePlay()
                 // }
             },
+
             ...mapMutations({
-                'setPlayingState':'SET_PLAYING_STATE'
+                'setPlayingState':'SET_PLAYING_STATE',
+                'setFullScreen':'SET_FULL_SCREEN'
             })
+        },
+        components:{
+            ProgressBar
         }
 
     }

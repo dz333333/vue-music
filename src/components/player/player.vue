@@ -13,7 +13,7 @@
             <h1 class="title" v-html="currentSong.name"></h1>
             <h2 class="subtitle" v-html="currentSong.singer"></h2>
           </div>
-          <div class="middle">
+          <div class="middle" @click="changeMiddle">
             <transition name="middleL">
               <div class="middle-l" v-show="currentShow=== 'cd'">
                 <div class="cd-wrapper">
@@ -23,8 +23,18 @@
                 </div>
               </div>
             </transition>
-            <transition>
-
+            <transition name="middleR">
+              <Scroll class="middle-r" ref="lyricList" v-show="currentShow==='lyric'" :data="currentLyric&& currentLyric.lines">
+                <div class="lyric-wrapper">
+                  <div class="currentLyric" v-if="currentLyric">
+                    <p ref="lyricLine" class="text" :class="{'current': currentLineNum === index}"
+                       v-for="(line, index) in currentLyric.lines" :key="line.key">
+                      {{line.txt}}
+                    </p>
+                  </div>
+                  <p class="no-lyric" v-if="currentLyric === null">{{upDatecurrentLyric}}</p>
+                </div>
+              </Scroll>
             </transition>
           </div>
           <div class="bottom">
@@ -70,7 +80,9 @@
   import {mapGetters,mapActions,mapMutations} from "vuex"
   import {playList} from "@/store/getters";
   import ProgressBar from '@/base/progress-bar/progress-bar'
+  import Scroll from '@/base/scroll/scroll'
   import {getSong, getLyric} from '@/api/song'
+  import Lyric from 'lyric-parser'
     export default {
       data(){
         return{
@@ -119,7 +131,7 @@
                 this._getSong(newVal.id)
             },
             url (newUrl) {
-                // this._getLyric(this.currentSong.id)
+                this._getLyric(this.currentSong.id)
                 this.$refs.audio.src = newUrl
                 // let play = setInterval(() => {
                 //   if (this.songReady) {
@@ -153,7 +165,7 @@
             },
             back () {
                 this.setFullScreen(false)
-                // this.currentShow = 'cd'
+                this.currentShow = 'cd'
             },
             percentChangeEnd (percent) {
                 this.move = false
@@ -163,17 +175,17 @@
                     this.$refs.audio.play()
                     this.setPlayingState(true)
                 }
-                // if (this.currentLyric) {
-                //     this.currentLyric.seek(currentTime * 1000)
-                // }
+                if (this.currentLyric) {
+                    this.currentLyric.seek(currentTime * 1000)
+                }
             },
             percentChange (percent) {
                 this.move = true
                 const currentTime = this.duration * percent
                 this.currentTime = currentTime
-                // if (this.currentLyric) {
-                //     this.currentLyric.seek(currentTime * 1000)
-                // }
+                if (this.currentLyric) {
+                    this.currentLyric.seek(currentTime * 1000)
+                }
             },
             updateTime (e) {
                 if (this.move) {
@@ -182,7 +194,6 @@
                 this.currentTime = e.target.currentTime
             },
             _getSong (id) {
-                console.log(6666)
                 getSong(id).then((res) => {
                     this.url = res.data.data[0].url
                 })
@@ -191,18 +202,63 @@
                 const audio = this.$refs.audio
                 this.setPlayingState(!this.playing)
                 this.playing ? audio.play() : audio.pause()
-                // if (this.currentLyric) {
-                //     this.currentLyric.togglePlay()
-                // }
+                if (this.currentLyric) {
+                    this.currentLyric.togglePlay()
+                }
             },
-
+            upDatecurrentLyric () {
+                if (this.noLyric) {
+                    return '暂无歌词'
+                }
+                if (!this.noLyric) {
+                    return '歌词加载中'
+                }
+            },
+            changeMiddle () {
+                if (this.currentShow === 'cd') {
+                    this.currentShow = 'lyric'
+                } else {
+                    this.currentShow = 'cd'
+                }
+                // console.log(this.currentShow)
+            },
+            _getLyric (id) {
+                if (this.currentLyric) {
+                    this.currentLyric.stop()
+                    this.currentLyric = null
+                }
+                this.noLyric = false
+                getLyric(id).then((res) => {
+                    this.currentLyric = new Lyric(res.data.lrc.lyric, this.handleLyric)
+                    if (this.playing) {
+                        this.currentLyric.play()
+                        // 歌词重载以后 高亮行设置为 0
+                        this.currentLineNum = 0
+                        this.$refs.lyricList.scrollTo(0, 0, 1000)
+                    }
+                }).catch(() => {
+                    this.currentLyric = null
+                    this.noLyric = true
+                    this.currentLineNum = 0
+                })
+            },
+            handleLyric ({lineNum, txt}) {
+                this.currentLineNum = lineNum
+                if (lineNum > 5) {
+                    let lineEl = this.$refs.lyricLine[lineNum - 5]
+                    this.$refs.lyricList.scrollToElement(lineEl, 1000)
+                } else {
+                    this.$refs.lyricList.scrollTo(0, 0, 1000)
+                }
+            },
             ...mapMutations({
                 'setPlayingState':'SET_PLAYING_STATE',
                 'setFullScreen':'SET_FULL_SCREEN'
             })
         },
         components:{
-            ProgressBar
+            ProgressBar,
+            Scroll
         }
 
     }

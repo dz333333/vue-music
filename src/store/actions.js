@@ -1,5 +1,6 @@
 
 import * as types from './mutation-types'
+import {saveSearch, deleteSearch, clearSearch, savePlay, saveFavorite, deleteFavorite} from '@/common/js/cache'
 function findIndex (list, song) {
     return list.findIndex((item) => {
         return item.id === song.id
@@ -51,4 +52,6 @@ export const insertSong = function ({commit, state}, song) {
     commit(types.SET_PLAYING_STATE, state.playing)
 }
 
-
+export const savePlayHistory = function ({commit}, song) {
+    commit(types.SET_PLAY_HISTORY, savePlay(song))
+}

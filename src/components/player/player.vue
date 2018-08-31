@@ -50,13 +50,13 @@
                 <i class="iconfont mode" ></i>
               </div>
               <div class="icon i-left" >
-                <i class="iconfont icon-prev" ></i>
+                <i class="iconfont icon-prev" @click="prev"></i>
               </div>
               <div class="icon i-center" >
                 <i class="iconfont"  @click="togglePlaying" :class="playIcon"></i>
               </div>
               <div class="icon i-right" >
-                <i class="iconfont icon-test"></i>
+                <i class="iconfont icon-test"  @click="next"></i>
               </div>
               <div class="icon i-right">
                 <i class="iconfont"  ></i>
@@ -72,7 +72,7 @@
         </div>
       </div>
     </transition>
-    <audio id="music-audio" autoplay ref="audio" @timeupdate="updateTime"></audio>
+    <audio id="music-audio" autoplay ref="audio" @error="error" @canplay="ready" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
@@ -114,7 +114,8 @@
                 'playList',
                 'currentSong',
                 'playing',
-                'fullScreen'
+                'fullScreen',
+                'currentIndex'
             ])
         },
         watch:{
@@ -251,10 +252,68 @@
                     this.$refs.lyricList.scrollTo(0, 0, 1000)
                 }
             },
+            ready () {
+                console.log('ready')
+                this.songReady = true
+                this.savePlayHistory(this.currentSong)
+            },
+            error () {
+                this.songReady = false
+            },
+            loop () {
+                this.$refs.audio.currentTime = 0
+                this.$refs.audio.play()
+                if (this.currentLyric) {
+                    this.currentLyric.seek()
+                }
+            },
+            next () {
+                if (!this.songReady) {
+                    return
+                }
+                if (this.playList.length === 1) {
+                    this.loop()
+                    return
+                }else {
+                    let index = this.currentIndex + 1
+                    if (index === this.playList.length) {
+                        index = 0
+                    }
+                    this.setCurrentIndex(index)
+                    // this.$refs.audio.play()
+                    if (!this.playing) {
+                        this.togglePlaying()
+                    }
+                }
+                this.songReady = false
+            },
+            prev(){
+                console.log(this.songReady,'ss')
+              if(!this.songReady){
+                  return
+              }
+              if(this.playList.length===1){
+                  this.loop();
+                  return;
+
+              }else {
+                  let index=this.currentIndex-1
+                  if(index===-1){
+                      index=this.playList.length-1
+                      this.setCurrentIndex(index)
+                  }
+                  if(!this.playing){
+                      this.togglePlaying()
+                  }
+              }
+              this.songReady=false
+            },
             ...mapMutations({
                 'setPlayingState':'SET_PLAYING_STATE',
-                'setFullScreen':'SET_FULL_SCREEN'
-            })
+                'setFullScreen':'SET_FULL_SCREEN',
+                'setCurrentIndex': 'SET_CURRENT_INDEX',
+            }),
+            ...mapActions(['savePlayHistory'])
         },
         components:{
             ProgressBar,

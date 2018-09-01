@@ -47,7 +47,7 @@
             </div>
             <div class="operators">
               <div class="icon i-left" >
-                <i class="iconfont mode" ></i>
+                <i class="iconfont mode" :class="iconMode" @click="changeMode"> </i>
               </div>
               <div class="icon i-left" >
                 <i class="iconfont icon-prev" @click="prev"></i>
@@ -72,18 +72,22 @@
         </div>
       </div>
     </transition>
-    <audio id="music-audio" autoplay ref="audio" @error="error" @canplay="ready" @timeupdate="updateTime"></audio>
+    <audio id="music-audio" autoplay @ended="end" ref="audio" @error="error" @canplay="ready" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script>
   import {mapGetters,mapActions,mapMutations} from "vuex"
-  import {playList} from "@/store/getters";
+
   import ProgressBar from '@/base/progress-bar/progress-bar'
   import Scroll from '@/base/scroll/scroll'
   import {getSong, getLyric} from '@/api/song'
   import Lyric from 'lyric-parser'
+  import {playMode} from '@/common/js/config'
+  import {playlistMixin} from '@/common/js/mixin'
+  import {shuffle} from '@/common/js/utl'
     export default {
+        // mixins: [playlistMixin],
       data(){
         return{
             url: '',
@@ -104,6 +108,15 @@
         },
         name: "player",
         computed:{
+            iconMode () {
+                if (this.mode === playMode.sequence) {
+                    return 'icon-next'
+                } else if (this.mode === playMode.loop) {
+                    return 'icon-loop'
+                } else {
+                    return 'icon-random'
+                }
+            },
             playIcon () {
                 return this.playing ? 'icon-stop' : 'icon-bofangicon'
             },
@@ -115,7 +128,9 @@
                 'currentSong',
                 'playing',
                 'fullScreen',
-                'currentIndex'
+                'currentIndex',
+                'mode',
+                'sequenceList'
             ])
         },
         watch:{
@@ -300,18 +315,47 @@
                   let index=this.currentIndex-1
                   if(index===-1){
                       index=this.playList.length-1
-                      this.setCurrentIndex(index)
+                      console.log(index,'index')
                   }
+                  console.log(index,'index2')
+                  this.setCurrentIndex(index)
                   if(!this.playing){
                       this.togglePlaying()
                   }
               }
               this.songReady=false
             },
+            end(){
+              if(this.mode===playMode.loop){
+                  this.loop()
+              }  else {
+                  this.next()
+              }
+            },
+            changeMode () {
+                const mode = (this.mode + 1) % 3
+                this.setPlayMode(mode)
+                let list = null
+                if (mode === playMode.random) {
+                    list = shuffle(this.sequenceList)
+                } else {
+                    list = this.sequenceList
+                }
+                this._resetCurrentIndex(list)
+                this.setPlayList(list)
+            },
+            _resetCurrentIndex (list) {
+                let index = list.findIndex((item) => {
+                    return item.id === this.currentSong.id
+                })
+                this.setCurrentIndex(index)
+            },
             ...mapMutations({
                 'setPlayingState':'SET_PLAYING_STATE',
                 'setFullScreen':'SET_FULL_SCREEN',
                 'setCurrentIndex': 'SET_CURRENT_INDEX',
+                'setPlayMode':'SET_PLAY_MODE',
+                'setPlayList':'SET_PLAYLIST'
             }),
             ...mapActions(['savePlayHistory'])
         },

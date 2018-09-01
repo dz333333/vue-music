@@ -5,7 +5,7 @@ import {shuffle} from '@/common/js/utl'
 export const playlistMixin = {
   computed: {
     ...mapGetters([
-      'playlist'
+      'playList'
     ])
   },
   mounted () {

@@ -66,20 +66,34 @@
         </div>
     </transition>
     <transition name="mini">
-      <div class="mini-player" v-show="!fullScreen" >
+      <div class="mini-player" v-show="!fullScreen" @click.stop="open">
         <div class="icon">
-          <img src="" alt="">
+          <img :class="cdCls"  :src="currentSong.image" width="40" height="40">
+        </div>
+        <div class="text">
+          <h2 class="name" >{{currentSong.name}}</h2>
+          <div class="desc">{{currentSong.singer}}</div>
+        </div>
+        <div class="control" @click.stop="togglePlaying">
+          <ProgressCircle :radius="radius" :percent="percent">
+            <i class="fa" :class="miniIcon"></i>
+          </ProgressCircle>
+        </div>
+        <div class="control" @click.stop="showPlaylist">
+          <i class="iconfont icon-caidan1"></i>
         </div>
       </div>
     </transition>
+    <PlayList @stopMusic="stopMusic" ref="playlist"></PlayList>
     <audio id="music-audio" autoplay @ended="end" ref="audio" @error="error" @canplay="ready" @timeupdate="updateTime"></audio>
   </div>
 </template>
 
 <script>
   import {mapGetters,mapActions,mapMutations} from "vuex"
-
+  import ProgressCircle from '@/base/progress-circle/progress-circle'
   import ProgressBar from '@/base/progress-bar/progress-bar'
+  import PlayList from '@/components/playlist/playlist'
   import Scroll from '@/base/scroll/scroll'
   import {getSong, getLyric} from '@/api/song'
   import Lyric from 'lyric-parser'
@@ -116,6 +130,9 @@
                 } else {
                     return 'icon-random'
                 }
+            },
+            miniIcon () {
+                return this.playing ? 'fa-stop' : 'fa-play'
             },
             playIcon () {
                 return this.playing ? 'icon-stop' : 'icon-bofangicon'
@@ -344,11 +361,22 @@
                 this._resetCurrentIndex(list)
                 this.setPlayList(list)
             },
+            stopMusic () {
+                // 删除最后一首的时候暂停音乐
+                this.$refs.audio.pause()
+                console.log('删除最后一首的时候暂停音乐')
+            },
             _resetCurrentIndex (list) {
                 let index = list.findIndex((item) => {
                     return item.id === this.currentSong.id
                 })
                 this.setCurrentIndex(index)
+            },
+            open () {
+                this.setFullScreen(true)
+            },
+            showPlaylist () {
+                this.$refs.playlist.show()
             },
             ...mapMutations({
                 'setPlayingState':'SET_PLAYING_STATE',
@@ -361,7 +389,9 @@
         },
         components:{
             ProgressBar,
-            Scroll
+            Scroll,
+            ProgressCircle,
+            PlayList
         }
 
     }

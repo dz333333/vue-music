@@ -71,3 +71,30 @@ export const insertSong = function ({commit, state}, song) {
 export const savePlayHistory = function ({commit}, song) {
     commit(types.SET_PLAY_HISTORY, savePlay(song))
 }
+export const deleteSongList = function ({commit}) {
+    commit(types.SET_PLAYLIST, [])
+    commit(types.SET_SEQUENCE_LIST, [])
+    commit(types.SET_CURRENT_INDEX, -1)
+    commit(types.SET_PLAYING_STATE, false)
+}
+export const deleteSong = function ({commit, state}, song) {
+    let playList = state.playList.slice()
+    let sequenceList = state.sequenceList.slice()
+    let currentIndex = state.currentIndex
+    let pIndex = findIndex(playList, song)
+    playList.splice(pIndex, 1)
+    let sIndex = findIndex(sequenceList, song)
+    sequenceList.splice(sIndex, 1)
+
+    if (currentIndex > pIndex || currentIndex === playList.length) {
+        currentIndex--
+    }
+
+    commit(types.SET_PLAYLIST, playList)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+    commit(types.SET_CURRENT_INDEX, currentIndex)
+
+    const playingState = playList.length > 0
+    // 如果歌曲删除完毕，那么 播放停止
+    commit(types.SET_PLAYING_STATE, playingState)
+}

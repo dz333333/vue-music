@@ -27,6 +27,9 @@ const mutations={
     },[types.SET_SEQUENCE_LIST] (state, list) {
         state.sequenceList = list
     },
+    [types.SET_FAVORITE_LIST] (state, list) {
+        state.favoriteList = list
+    }
 }
 
 export default mutations

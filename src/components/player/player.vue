@@ -59,7 +59,7 @@
                 <i class="iconfont icon-test"  @click="next"></i>
               </div>
               <div class="icon i-right">
-                <i class="iconfont"  ></i>
+                <i class="iconfont"  @click="toggleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
               </div>
             </div>
           </div>
@@ -147,7 +147,8 @@
                 'fullScreen',
                 'currentIndex',
                 'mode',
-                'sequenceList'
+                'sequenceList',
+                'favoriteList'
             ])
         },
         watch:{
@@ -378,6 +379,25 @@
             showPlaylist () {
                 this.$refs.playlist.show()
             },
+            toggleFavorite (song) {
+                if (this.isFavorite(song)) {
+                    this.deleteFavoriteList(song)
+                } else {
+                    this.saveFavoriteList(song)
+                }
+            },
+            getFavoriteIcon (song) {
+                if (this.isFavorite(song)) {
+                    return 'icon-like'
+                }
+                return 'icon-dislike'
+            },
+            isFavorite (song) {
+                const index = this.favoriteList.findIndex((item) => {
+                    return item.id === song.id
+                })
+                return index > -1
+            },
             ...mapMutations({
                 'setPlayingState':'SET_PLAYING_STATE',
                 'setFullScreen':'SET_FULL_SCREEN',
@@ -385,7 +405,7 @@
                 'setPlayMode':'SET_PLAY_MODE',
                 'setPlayList':'SET_PLAYLIST'
             }),
-            ...mapActions(['savePlayHistory'])
+            ...mapActions(['savePlayHistory','saveFavoriteList','deleteFavoriteList'])
         },
         components:{
             ProgressBar,

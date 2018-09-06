@@ -11,5 +11,6 @@ const state={
     mode:playMode.sequence,
     // 顺序列表
     sequenceList: [],
+    favoriteList:loadFavorite()
 }
 export default state

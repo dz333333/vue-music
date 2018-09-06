@@ -77,6 +77,16 @@ export const deleteSongList = function ({commit}) {
     commit(types.SET_CURRENT_INDEX, -1)
     commit(types.SET_PLAYING_STATE, false)
 }
+
+export const sequencePlay = function ({commit}, {list}) {
+    commit(types.SET_PLAY_MODE, playMode.sequence)
+    commit(types.SET_SEQUENCE_LIST, list)
+    commit(types.SET_PLAYLIST, list)
+    commit(types.SET_CURRENT_INDEX, 0)
+    commit(types.SET_FULL_SCREEN, true)
+    commit(types.SET_PLAYING_STATE, true)
+}
+
 export const deleteSong = function ({commit, state}, song) {
     let playList = state.playList.slice()
     let sequenceList = state.sequenceList.slice()
@@ -97,4 +107,12 @@ export const deleteSong = function ({commit, state}, song) {
     const playingState = playList.length > 0
     // 如果歌曲删除完毕，那么 播放停止
     commit(types.SET_PLAYING_STATE, playingState)
+}
+
+export const saveFavoriteList = function ({commit}, song) {
+    commit(types.SET_FAVORITE_LIST, saveFavorite(song))
+}
+
+export const deleteFavoriteList = function ({commit}, song) {
+    commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
 }
